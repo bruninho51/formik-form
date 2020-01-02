@@ -36,3 +36,37 @@
     transform: rotate(360deg);
   }
 }
+
+.hasError {
+  background-color: rgba(255,0,0,0.2);
+}
+
+.error-span {
+  color: red;
+  font-size: 12px;
+}
+
+.container {
+  margin: 25px 50px;
+}
+
+.btn {
+  background-color: rgb(130,255,150);
+  border: 1px solid black;
+  margin-top: 10px;
+  padding: 6px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.error {
+  background-color: rgb(255,25,25);
+  padding: 20px;
+  border-radius: 10px;
+  width: 250px;
+  text-align: center;
+  color: white;
+}
+.hidden {
+  display: none;
+}
