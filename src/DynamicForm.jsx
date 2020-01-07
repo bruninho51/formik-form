@@ -1,8 +1,43 @@
 import React, { Fragment } from 'react';
-import { Formik, Field } from 'formik';
 import './App.css';
+import { Formik, Field } from 'formik';
+import { withStyles } from '@material-ui/core/styles';
+import { 
+    TextField, 
+    FormHelperText, 
+    FormControl, 
+    TextareaAutosize, 
+    Select,
+    MenuItem,
+    Button
+} from '@material-ui/core';
+
+const styles = theme => ({
+    textField: {
+      marginTop: theme.spacing(1),
+      width: 200
+    },
+    textArea: {
+        width: 200
+    },
+    select: {
+        marginTop: theme.spacing(1),
+        width: 200
+    }
+});
 
 class DynamicForm extends React.Component {
+
+    constructor(props) {
+        super(props);
+
+        this.renderFields = this.renderFields.bind(this);
+        this.renderText = this.renderText.bind(this);
+        this.renderSelect = this.renderSelect.bind(this);
+        this.renderCheckbox = this.renderCheckbox.bind(this);
+        this.renderTextArea = this.renderTextArea.bind(this);
+    }
+
     renderFields(inputs) {
         return (
             inputs.map(input => {
@@ -21,22 +56,27 @@ class DynamicForm extends React.Component {
     }
 
     renderText(input) {
+        const classes = this.props.classes;
         return (
             <Fragment key={input.name}>
-                <label>{input.label}</label>
                 <div>
                     <Field 
                         name={input.name}
                         render={(props) => {
                             const { field } = props;
                             const { errors, touched } = props.form;
-                            const hasError = errors[input.name] && touched[input.name] ? "hasError": "";
+                            const hasError = errors[input.name] && touched[input.name];
                             return (
-                                <input 
-                                    {... field}
-                                    className={hasError}
-                                    type="text"
-                                />
+                                <FormControl error={hasError}>
+                                    <TextField 
+                                        {... field}
+                                        className={classes.textField}
+                                        variant="outlined"
+                                        label={input.label}
+                                        margin="dense"
+                                    />
+                                    {hasError && <FormHelperText>{errors[input.name]}</FormHelperText>}
+                                </FormControl>
                             );
                         }}
                     />
@@ -46,25 +86,34 @@ class DynamicForm extends React.Component {
     }
 
     renderSelect(input) {
+        const classes = this.props.classes;
         return (
             <Fragment key={input.name}>
-                <label>{input.label}</label>
                 <div>
                     <Field 
                         name={input.name}
                         render={(props) => {
                             const { field } = props;
                             const { errors, touched } = props.form;
-                            const hasError = errors[input.name] && touched[input.name] ? "hasError": "";
-                            const defaultOption = <option key="default" value="Please select">Please Select</option>
-                            const options = input.data.map(i => <option key={i} value={i}> {i} </option> );
+                            const hasError = errors[input.name] && touched[input.name];
+                            const defaultOption = <MenuItem key="default" value="Please select">Please Select</MenuItem>
+                            const options = input.data.map(i => <MenuItem key={i} value={i}> {i} </MenuItem> );
                             const selectOptions = [defaultOption, ...options];
                             return (
-                                <div className="dropdown">
-                                    <select value={field.name} {...field} className={hasError}>
+                                <FormControl error={hasError}>
+                                    {console.log(field.value)}
+                                    <Select 
+                                        {...field} 
+                                        value={field.value ? field.value : 'Please select'}
+                                        className={classes.select}
+                                        displayEmpty
+                                        margin="dense"
+                                        variant="outlined"
+                                    >
                                         {selectOptions}
-                                    </select><br />
-                                </div>
+                                    </Select>
+                                    {hasError && <FormHelperText>{errors[input.name]}</FormHelperText>}
+                                </FormControl>
                             );
                         }}
                     />
@@ -81,14 +130,18 @@ class DynamicForm extends React.Component {
                     name={input.name}
                     render={(props) => {
                         const { field } = props;
-                        console.log(field);
+                        const { errors, touched } = props.form;
+                        const hasError = errors[input.name] && touched[input.name];
                         return (
-                            <input 
-                                name={input.name}
-                                type="checkbox"
-                                checked={field.value.length > 0}
-                                onChange={field.onChange}
-                            />
+                            <FormControl error={hasError}>
+                                <input 
+                                    name={input.name}
+                                    type="checkbox"
+                                    checked={field.value.length > 0}
+                                    onChange={field.onChange}
+                                /><br />
+                                {hasError && <FormHelperText>{errors[input.name]}</FormHelperText>}
+                            </FormControl>
                         );
                     }}
                 />
@@ -97,6 +150,7 @@ class DynamicForm extends React.Component {
     }
 
     renderTextArea(input) {
+        const classes = this.props.classes;
         return (
             <Fragment key={input.name}>
                 <label>{input.label}</label>
@@ -106,12 +160,18 @@ class DynamicForm extends React.Component {
                         render={(props) => {
                             const { field } = props;
                             const { errors, touched } = props.form;
-                            const hasError = errors[input.name] && touched[input.name] ? 'hasError' : '';
+                            const hasError = errors[input.name] && touched[input.name];
 
                             return (
-                                <div>
-                                    <textarea {...field} className={hasError}></textarea>
-                                </div>
+                                <FormControl error={hasError}>
+                                    <TextareaAutosize
+                                        {...field}
+                                        rowsMin={3}
+                                        rowsMax={4}
+                                        className={classes.textArea}
+                                    />
+                                    {hasError && <FormHelperText>{errors[input.name]}</FormHelperText>}
+                                </FormControl>
                             );
                         }}
                     />
@@ -141,27 +201,25 @@ class DynamicForm extends React.Component {
                     validationSchema={this.props.validation}
                     validateOnChange={true}
                     initialValues={initialValues}
-                    render={(form) => {
-                        const errorMessageShow = Object.keys(form.errors).length > 0 ? 'error' : 'hidden';
-                        return (
-                            <div>
-                                <form onSubmit={form.handleSubmit}>
-                                    <div className={errorMessageShow}>
-                                        Please correct the errors below
-                                    </div>
-                                    {this.renderFields(this.props.fields)}
-                                    <br />
-                                    <button type="submit" className="btn">
-                                        Submit
-                                    </button>
-                                </form>
-                            </div>
-                        );
-                    }}
-                />
+                >
+                    {form => (
+                        <div>
+                            <form onSubmit={form.handleSubmit}>
+                                {/*<div className={errorMessageShow}>
+                                    Please correct the errors below
+                                </div>*/}
+                                {this.renderFields(this.props.fields)}
+                                <br /><br />
+                                <Button type="submit" variant="contained" color="primary">
+                                    Submit
+                                </Button>
+                            </form>
+                        </div>
+                    )}
+                </Formik>
             </div>
         );
     }
 }
 
-export default DynamicForm;
+export default withStyles(styles)(DynamicForm);
